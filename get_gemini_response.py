@@ -3,7 +3,15 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 
 
-def get_gemini_response(player_name, enemy_name, role):
+def get_gemini_response(player_champ_name, enemy_champ_name, role):
+    '''
+    Takes in the player champion's name, the enemy champion's name, and their lane and sends a request to the Gemini API to get matchup information. Prompted to specify enemy champion's abilities and provide tips for the specific matchup.
+
+    Args:
+    player_champ_name: (str) player's champion name
+    enemy_champ_name: (str) enemy's champion name
+    role: (str) player's role/lane
+    '''
 
     load_dotenv()
 

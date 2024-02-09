@@ -6,6 +6,19 @@ from roleidentification import pull_data, get_roles
 
 
 def get_matchup(game_name, tag_line, region):
+    '''
+    Get matchup data from riot api and return player's champion, enemy's champion, and player's role
+
+    Args:
+    game_name: (str) player's game name (ex. Name)
+    tag_line: (str) player's tag line (ex. 1234 or NA1)
+    region: (str) player's region (ex. na1)
+
+    Returns:
+    player_champ_name: (str) player's champion name
+    enemy_champ_name: (str) enemy's champion name
+    role: (str) player's role
+    '''
 
     # used when api's require location rather than server region
     region_to_routing = {
