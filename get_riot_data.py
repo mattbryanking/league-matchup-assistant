@@ -7,6 +7,7 @@ from roleidentification import pull_data, get_roles
 
 def get_matchup(game_name, tag_line, region):
 
+    # used when api's require location rather than server region
     region_to_routing = {
         'na1': 'AMERICAS',
         'br1': 'AMERICAS',
@@ -43,7 +44,7 @@ def get_matchup(game_name, tag_line, region):
     # search for puuid via riot id
     print(f"Searching for user via Riot ID...")
     response = requests.get(
-        f'https://{region_to_routing[region]}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{riot_id}', headers=headers)
+        f'https://{routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{riot_id}', headers=headers)
 
     player_puuid = response.json()['puuid']
     if not player_puuid:
@@ -73,13 +74,13 @@ def get_matchup(game_name, tag_line, region):
     if response.status_code != 200 or not match_data:
         print("User is not currently in a valid match.")
         exit()
-    
+
     with open('current_match.json', 'w') as f:
         json.dump(match_data, f)
 
     print("Match data found.")
     print("Calculating player matchup...")
-    
+
     # create dictionary as {puuid: [team, champion_id, role]}
     player_champ_data = {}
 
@@ -111,15 +112,26 @@ def get_matchup(game_name, tag_line, region):
                     if champ_id == champion_id), None)
         if role:
             player_champ_data[puuid].append(role)
-            
-    # find players role and determine matchup
-    player_data = player_champ_data[player_puuid]
-    enemy_data = None
-    
-    # loop through players to find enemy player in same role
-    for puuid, data in player_champ_data.items():
-        if data[0] != player_data[0] and data[2] == player_data[2]:
-            enemy_data = data
-            break
-    
 
+    # find players role and determine matchup
+    role = player_champ_data[player_puuid][2]
+    player_champ = player_champ_data[player_puuid][1]
+
+    # find enemy champ with same role
+    enemy_champ = None
+    for puuid, (team, champ, champ_role) in player_champ_data.items():
+        if team != player_champ_data[player_puuid][0] and champ_role == role:
+            enemy_champ = champ
+            break
+
+    # find champion names from champion id
+    player_champ_name = next(
+        (champion_data['data'][champ]['id'] for champ in champion_data['data'] if int(champion_data['data'][champ]['key']) == player_champ), None)
+    enemy_champ_name = next(
+        (champion_data['data'][champ]['id'] for champ in champion_data['data'] if int(champion_data['data'][champ]['key']) == enemy_champ), None)
+
+    print(f"\nPlayer's champ: {player_champ_name}")
+    print(f"Enemy's champ: {enemy_champ_name}")
+    print(f"Player's role: {role.capitalize()}\n")
+
+    return player_champ_name, enemy_champ_name, role
